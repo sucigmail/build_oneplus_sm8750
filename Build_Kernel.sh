@@ -30,9 +30,9 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y python3 git curl
 
 #下载repo并移动至bin目录给予权限
-curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
-chmod a+x ~/repo
-sudo mv ~/repo /usr/local/bin/repo
+curl https://storage.googleapis.com/git-repo-downloads/repo > ~/build_oneplus_sm8750/repo
+chmod a+x ~/build_oneplus_sm8750/repo
+sudo mv ~/build_oneplus_sm8750/repo /usr/local/bin/repo
 
 #创建内核工作目录并克隆源码
 mkdir build_kernel && cd build_kernel
@@ -57,10 +57,10 @@ export KSU_VERSION=$KSU_VERSION
 sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
 
 #写入SUSFS补丁
-cd ~/build_kernel
+cd ~/build_oneplus_sm8750/build_kernel
 git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${ANDROID_VERSION}-${KERNEL_VERSION}
 git clone https://github.com/ShirkNeko/SukiSU_patch.git
-cd ~/build_kernel/kernel_platform
+cd ~/build_oneplus_sm8750/build_kernel/kernel_platform
 cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${ANDROID_VERSION}-${KERNEL_VERSION}.patch ./common/
 cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
 cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
@@ -88,7 +88,7 @@ echo "完成"
 
 
 if [ "${KERNEL_LZ4}" = "1" ]; then
-    cd ~/build_kernel/kernel_platform/common
+    cd ~/build_oneplus_sm8750/build_kernel/kernel_platform/common
     
     # 复制补丁文件
     cp ../../SukiSU_patch/other/zram/zram_patch/${KERNEL_VERSION}/lz4kd.patch ./
@@ -101,7 +101,7 @@ else
 fi
 
 # 进入工作目录
-cd ~/build_kernel/kernel_platform
+cd ~/build_oneplus_sm8750/build_kernel/kernel_platform
 
 # 配置项数组
 CONFIGS=(
@@ -144,7 +144,7 @@ git add -A && git commit -a -m "BUILD Kernel"
 # 检查 是否开启KPM
 if [ "$KERNEL_KPM" = "1" ]; then
   # 进入工作目录
-  cd ~/build_kernel/kernel_platform
+  cd ~/build_oneplus_sm8750/build_kernel/kernel_platform
   
   # 添加 KPM 配置项
   echo "CONFIG_KPM=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -160,7 +160,7 @@ else
 fi
 
 # 修改内核名称
-d ~/build_kernel/kernel_platform/ || exit
+d ~/build_oneplus_sm8750/build_kernel/kernel_platform/ || exit
 sed -i 's/res="\$res\$(cat "\$file")"/res="-android15-8-g013ec21bba94-abogki383916444"/g' ./common/scripts/setlocalversion
 sudo sed -i "s/-android15-8-g013ec21bba94-abogki383916444/$KERNEL_NAME/g" ./common/scripts/setlocalversion
 
@@ -169,7 +169,7 @@ sudo sed -i "s/-android15-8-g013ec21bba94-abogki383916444/$KERNEL_NAME/g" ./comm
 # 检查是否启用 风驰
 if [ "$KERNEL_SCX" == "1" ]; then
     # 进入目标目录
-    cd ~/build_kernel/kernel_platform/ || exit
+    cd ~/build_oneplus_sm8750/build_kernel/kernel_platform/ || exit
 
     # 克隆 sched_ext 仓库
     git clone https://github.com/HanKuCha/sched_ext.git
@@ -193,14 +193,14 @@ SOURCE_DATE_EPOCH=$(date -d "$KERNEL_TIME" +%s)
 export SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
 
 # 进入工作目录
-cd ~/build_kernel/kernel_platform || exit
+cd ~/build_oneplus_sm8750/build_kernel/kernel_platform || exit
 
 # 执行构建命令
 tools/bazel run --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
 
 
 # 进入构建输出目录
-cd ~/build_kernel/kernel_platform/dist/ || exit
+cd ~/build_oneplus_sm8750/build_kernel/kernel_platform/dist/ || exit
 
 # 下载并设置补丁工具
 curl -LO https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.11-beta/patch_linux
@@ -231,17 +231,17 @@ rm -rf ./AnyKernel3/.git
 rm -rf ./AnyKernel3/push.sh
 
 # 将生成的内核镜像文件拷贝到 AnyKernel3 目录
-cp ~/build_kernel/kernel_platform/dist/Image ./AnyKernel3/
+cp ~/build_oneplus_sm8750/build_kernel/kernel_platform/dist/Image ./AnyKernel3/
 
 # 上传 AnyKernel3 到存档
 tar -czf SuKiSu_${KSUVER}_${FEIL}.tar.gz -C ./AnyKernel3 .
 
 # 上传 Image 到存档
-tar -czf Image_SuKiSu_${KSUVER}_${FEIL}.tar.gz -C ~/build_kernel/kernel_platform/dist Image
+tar -czf Image_SuKiSu_${KSUVER}_${FEIL}.tar.gz -C ~/build_oneplus_sm8750/build_kernel/kernel_platform/dist Image
 
 export DEST_PATH="/mnt/c/kernel"
 mkdir -p "$DEST_PATH"
-find ~/build_kernel/kernel_platform/dist/ -type f \( -iname "*img*" -o -iname "Image" -o -iname "*.img" -o -iname "*.tar" -o -iname "*.gz" \) -exec cp {} "$DEST_PATH" \;
+find ~/build_oneplus_sm8750/build_kernel/kernel_platform/dist/ -type f \( -iname "*img*" -o -iname "Image" -o -iname "*.img" -o -iname "*.tar" -o -iname "*.gz" \) -exec cp {} "$DEST_PATH" \;
 
 
 echo "关于本次编译后的所有文件已导出到 C盘的 kernel 文件夹"

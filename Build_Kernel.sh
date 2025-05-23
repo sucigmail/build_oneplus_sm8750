@@ -3,7 +3,26 @@
 #CPU型号(骁龙8至尊默认为sm8750)
 export CPU_MODEL="sm8750"
 #要编译的机型xml源码文件名前缀
-export XML_FILE="oneplus_ace5_pro"
+while true; do
+  echo "请选择机型 XML 文件名前缀："
+  echo "1) oneplus_ace5_pro"
+  echo "2) oneplus_13"
+  read -p "请输入对应数字 (1 或 2): " choice
+  case "$choice" in
+    1)
+      export XML_FILE="oneplus_ace5_pro"
+      break
+      ;;
+    2)
+      export XML_FILE="oneplus_13"
+      break
+      ;;
+    *)
+      echo "❌ 无效选择，请输入 1 或 2。"
+      ;;
+  esac
+done
+
 #处理器代号
 #export CPU_CODE="sun"
 #安卓版本

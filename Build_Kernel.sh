@@ -2,6 +2,7 @@
 #设置环境变量
 #CPU型号(骁龙8至尊默认为sm8750)
 export CPU_MODEL="sm8750"
+echo "已设置CPU为$"
 #要编译的机型xml源码文件名前缀
 while true; do
   echo "请选择机型 XML 文件名前缀："

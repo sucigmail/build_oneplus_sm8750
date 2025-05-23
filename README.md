@@ -1,9 +1,9 @@
 # 一加13、ACE 5 Pro本地编译<br>
 ## 使用方法<br>
-*`git clone https://github.com/sucigmail/build_oneplus_sm8750.git`<br>
-``cd build_oneplus_sm8750``<br>
-``chmod +x Build_Kernel.sh``<br>
-``./Build_Kernel.sh``<br>
+* `git clone https://github.com/sucigmail/build_oneplus_sm8750.git`<br>
+* ``cd build_oneplus_sm8750``<br>
+* ``chmod +x Build_Kernel.sh``<br>
+* ``./Build_Kernel.sh``<br>
 ## Windows推荐使用WSL运行-这里提供WSL转移到其他盘（E）避免文件占用C盘<br>
 ### WSL2迁移至其他目录<br>
 #### (1) 管理员身份运行PowerShell，执行：<br>

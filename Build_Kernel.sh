@@ -32,9 +32,12 @@ export ANDROID_VERSION="android15"
 #内核版本
 export KERNEL_VERSION="6.6"
 #内核名称
-export KERNEL_NAME="-By-TG@Q1udaoyu"
-read -p "请输入内核名称（默认 -By-TG@Q1udaoyu）: " kernel_name
-export KERNEL_NAME="${kernel_name:--By-TG@Q1udaoyu}"
+export KERNEL_NAME="-android15-8-g013ec21bba94-abogki383916444-"
+read -p "请输入内核名称后缀（默认 TG@Q1udaoyu，最大长度11个字符）: " kernel_name
+kernel_name=${kernel_name:0:11}  # 限制用户输入的长度为11个字符
+export KERNEL_NAME="${KERNEL_NAME}${kernel_name:-TG@Q1udaoyu}"
+
+echo "最终的内核名称为：$KERNEL_NAME"
 #内核构建时间
 export BUILD_TIME="2024-12-17 23:36:49 UTC"
 # 是否开启 KPM
@@ -83,15 +86,18 @@ git config --global user.name "Q1udaoyu"
 git config --global user.email "sucisama2888@gmail.com"
 
 #安装环境依赖
+echo "安装环境依赖"
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y python3 git curl
 
 #下载repo并移动至bin目录给予权限
+echo "下载repo并给予权限"
 curl https://storage.googleapis.com/git-repo-downloads/repo > ~/build_oneplus_sm8750/repo
 chmod a+x ~/build_oneplus_sm8750/repo
 sudo mv ~/build_oneplus_sm8750/repo /usr/local/bin/repo
 
 #创建内核工作目录并克隆源码
+echo "开启创建工作目录并拉取源码"
 mkdir build_kernel && cd build_kernel
 repo init -u https://github.com/sucigmail/kernel_manifest.git -b refs/heads/oneplus/${CPU_MODEL} -m ${XML_FILE}.xml --depth=1
 #同步内核源码
@@ -101,6 +107,7 @@ rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No File"
 rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No File"
 
 #拉取SukiSU源码并设置版本号
+echo "开启拉取SukiSU并写入版本"
 cd kernel_platform
 curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-dev
 
@@ -114,6 +121,7 @@ export KSU_VERSION=$KSU_VERSION
 sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
 
 #写入SUSFS补丁
+echo "开启修补SUSFS补丁"
 cd ~/build_oneplus_sm8750/build_kernel
 git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${ANDROID_VERSION}-${KERNEL_VERSION}
 git clone https://github.com/ShirkNeko/SukiSU_patch.git
@@ -140,11 +148,12 @@ cp ../../SukiSU_patch/hooks/syscall_hooks.patch ./
 patch -p1 -F 3 < syscall_hooks.patch
 
 # 输出完成信息
-echo "完成"
+echo "SUSFS补丁修补完成"
 
 
 
 if [ "${KERNEL_LZ4}" = "1" ]; then
+    echo "开始修补LZ4补丁"
     cd ~/build_oneplus_sm8750/build_kernel/kernel_platform/common
     
     # 复制补丁文件
@@ -152,6 +161,7 @@ if [ "${KERNEL_LZ4}" = "1" ]; then
     
     # 应用补丁
     patch -p1 -F 3 < lz4kd.patch || true
+    echo "LZ4补丁修补完成"
 
 else
     echo "未启用LZ4，跳过修补LZ4"
@@ -187,10 +197,11 @@ CONFIGS=(
 )
 
 # 将配置项添加到 gki_defconfig
+echo "写入GKI配置"
 for CONFIG in "${CONFIGS[@]}"; do
   echo "$CONFIG" >> ./common/arch/arm64/configs/gki_defconfig
 done
-
+echo "写入完成"
 # 删除 check_defconfig
 sudo sed -i 's/check_defconfig//' ./common/build.config.gki
 
@@ -201,6 +212,7 @@ git add -A && git commit -a -m "BUILD Kernel"
 # 检查 是否开启KPM
 if [ "$KERNEL_KPM" = "1" ]; then
   # 进入工作目录
+  echo "开启配置KPM"
   cd ~/build_oneplus_sm8750/build_kernel/kernel_platform
   
   # 添加 KPM 配置项
@@ -217,14 +229,16 @@ else
 fi
 
 # 修改内核名称
+echo "开启修改内核名称"
 cd ~/build_oneplus_sm8750/build_kernel/kernel_platform/ || exit
 sed -i 's/res="\$res\$(cat "\$file")"/res="-android15-8-g013ec21bba94-abogki383916444"/g' ./common/scripts/setlocalversion
 sudo sed -i "s/-android15-8-g013ec21bba94-abogki383916444/$KERNEL_NAME/g" ./common/scripts/setlocalversion
+echo "内核名称修改完成"
 
-#!/bin/bash
 
 # 检查是否启用 风驰
 if [ "$KERNEL_SCX" == "1" ]; then
+    echo "开启风驰内核"
     # 进入目标目录
     cd ~/build_oneplus_sm8750/build_kernel/kernel_platform/ || exit
 
@@ -239,24 +253,30 @@ if [ "$KERNEL_SCX" == "1" ]; then
 
     # 进入目标目录
     cd common/kernel/sched || exit
+    echo "风驰内核开启完成"
 else
     echo "未启用 风驰内核，跳过添加 风驰内核"
 fi
 
 # 使用 date 命令将日期转换为 Unix 时间戳
+echo "开始修改构建时间"
 SOURCE_DATE_EPOCH=$(date -d "$KERNEL_TIME" +%s)
 
 #将时间戳设为环境变量
 export SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
-
+echo "已设置构建时间为${BUILD_TIME}" 
 # 进入工作目录
 cd ~/build_oneplus_sm8750/build_kernel/kernel_platform || exit
 
 # 执行构建命令
+echo "开启构建编译内核"
 tools/bazel run --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
+
+echo "内核编译成功"
 
 
 # 进入构建输出目录
+echo "正在打包内核中..."
 cd ~/build_oneplus_sm8750/build_kernel/kernel_platform/dist/ || exit
 
 # 下载并设置补丁工具

@@ -119,7 +119,7 @@ curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/
 
 cd ./KernelSU
 KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10606)
-info "KSUVER=$KSU_VERSION" >> .env
+echo "KSUVER=$KSU_VERSION" >> .env
 source .env
 
 export KSU_VERSION=$KSU_VERSION
@@ -203,7 +203,7 @@ CONFIGS=(
 )
 
 # 将配置项添加到 gki_defconfig
-info "开启写入GKI配置"
+info "开始写入GKI配置"
 for CONFIG in "${CONFIGS[@]}"; do
   echo "$CONFIG" >> ./common/arch/arm64/configs/gki_defconfig
 done
@@ -218,11 +218,11 @@ git add -A && git commit -a -m "BUILD Kernel"
 # 检查 是否开启KPM
 if [ "$KERNEL_KPM" = "1" ]; then
   # 进入工作目录
-  info "开启配置KPM"
+  info "开始配置KPM"
   cd ~/build_oneplus_sm8750/build_kernel/kernel_platform
   
   # 添加 KPM 配置项
-  info "CONFIG_KPM=y" >> ./common/arch/arm64/configs/gki_defconfig
+  echo "CONFIG_KPM=y" >> ./common/arch/arm64/configs/gki_defconfig
   
   # 删除 check_defconfig
   sudo sed -i 's/check_defconfig//' ./common/build.config.gki
@@ -230,12 +230,13 @@ if [ "$KERNEL_KPM" = "1" ]; then
   # 提交更改到 Git
   cd common
   git add -A && git commit -a -m "BUILD Kernel"
+  info "KPM配置完成"
 else
   info "KPM 配置未启用，跳过配置"
 fi
 
 # 修改内核名称
-info "开启修改内核名称"
+info "自定义内核名称"
 cd ~/build_oneplus_sm8750/build_kernel/kernel_platform/ || exit
 sed -i 's/res="\$res\$(cat "\$file")"/res="-android15-8-g013ec21bba94-abogki383916444"/g' ./common/scripts/setlocalversion
 sudo sed -i "s/-android15-8-g013ec21bba94-abogki383916444/$KERNEL_NAME/g" ./common/scripts/setlocalversion
@@ -261,7 +262,7 @@ if [ "$KERNEL_SCX" == "1" ]; then
     cd common/kernel/sched || exit
     info "风驰内核开启完成"
 else
-    info "未启用 风驰内核，跳过添加 风驰内核"
+    info "未启用 风驰内核，跳过修补"
 fi
 
 # 使用 date 命令将日期转换为 Unix 时间戳
@@ -275,7 +276,7 @@ info "已设置构建时间为${BUILD_TIME}"
 cd ~/build_oneplus_sm8750/build_kernel/kernel_platform || exit
 
 # 执行构建命令
-info "开启构建编译内核"
+info "开始构建编译内核"
 tools/bazel run --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
 
 info "内核编译成功"

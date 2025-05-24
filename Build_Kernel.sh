@@ -205,7 +205,7 @@ CONFIGS=(
 # 将配置项添加到 gki_defconfig
 info "开启写入GKI配置"
 for CONFIG in "${CONFIGS[@]}"; do
-  info "$CONFIG" >> ./common/arch/arm64/configs/gki_defconfig
+  echo "$CONFIG" >> ./common/arch/arm64/configs/gki_defconfig
 done
 info "GKI配置写入完成"
 # 删除 check_defconfig

@@ -330,7 +330,7 @@ fi
 
 mkdir -p "$DEST_PATH"
 
-cp AnyKernel3_${KSUVER}_${XML_FEIL}_SuKiSu.zip $DEST_PATH
+cp ~/build_oneplus_sm8750/build_kernel/kernel_platform/dist/AnyKernel3_${KSUVER}_${XML_FEIL}_SuKiSu.zip $DEST_PATH
 
 find ~/build_oneplus_sm8750/build_kernel/kernel_platform/dist/ -type f \( -iname "*img*" -o -iname "Image" -o -iname "*.img" -o -iname "*.tar" -o -iname "*.gz" \) -exec cp {} "$DEST_PATH" \;
 

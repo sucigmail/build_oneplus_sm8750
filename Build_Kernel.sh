@@ -2,20 +2,21 @@
 #设置环境变量
 #CPU型号(骁龙8至尊默认为sm8750)
 export CPU_MODEL="sm8750"
-echo "已设置CPU为$"
 #要编译的机型xml源码文件名前缀
 while true; do
-  echo "请选择机型 XML 文件名前缀："
+  echo "请选择机需要编译的机型："
   echo "1) oneplus_ace5_pro"
   echo "2) oneplus_13"
   read -p "请输入对应数字 (1 或 2): " choice
   case "$choice" in
     1)
       export XML_FILE="oneplus_ace5_pro"
+      echo "选择的机型：$XML_FILE"
       break
       ;;
     2)
       export XML_FILE="oneplus_13"
+      echo "选择的机型：$XML_FILE"
       break
       ;;
     *)
@@ -32,14 +33,50 @@ export ANDROID_VERSION="android15"
 export KERNEL_VERSION="6.6"
 #内核名称
 export KERNEL_NAME="-By-TG@Q1udaoyu"
+read -p "请输入内核名称（默认 -By-TG@Q1udaoyu）: " kernel_name
+export KERNEL_NAME="${kernel_name:--By-TG@Q1udaoyu}"
 #内核构建时间
 export BUILD_TIME="2024-12-17 23:36:49 UTC"
-#是否开启KPM 1开启0关闭
-export KERNEL_KPM="1"
-#是否开启风驰内核 1开启0关闭
-export KERNEL_SCX="1"
-#是否开启lz4kd 1开启0关闭
-export KERNEL_LZ4="0"
+# 是否开启 KPM
+while true; do
+  read -p "是否开启 KPM？(1=开启, 0=关闭): " kpm
+  if [[ "$kpm" == "0" || "$kpm" == "1" ]]; then
+    export KERNEL_KPM="$kpm"
+    break
+  else
+    echo "❌ 请输入有效的选项：0 或 1。"
+  fi
+done
+
+# 是否开启 风驰内核
+while true; do
+  read -p "是否开启 风驰内核？(1=开启, 0=关闭): " scx
+  if [[ "$scx" == "0" || "$scx" == "1" ]]; then
+    export KERNEL_SCX="$scx"
+    break
+  else
+    echo "❌ 请输入有效的选项：0 或 1。"
+  fi
+done
+
+# 是否开启 LZ4KD
+while true; do
+  read -p "是否开启 LZ4KD？(1=开启, 0=关闭): " lz4
+  if [[ "$lz4" == "0" || "$lz4" == "1" ]]; then
+    export KERNEL_LZ4="$lz4"
+    break
+  else
+    echo "❌ 请输入有效的选项：0 或 1。"
+  fi
+done
+
+echo "请确认您要编译的参数，如不符合请按下Ctrl+C取消运行："
+echo "CPU型号：${CPU_MODEL}"
+echo "选择机型：${XML_FILE}"
+echo "安卓版本：${ANDROID_VERSION}"
+echo "内核版本：${KERNEL_VERSION}"
+echo "内核名称：${KERNEL_NAME}"
+echo "构建时间：${BUILD_TIME}"
 
 #设置Git用户名与邮箱
 git config --global user.name "Q1udaoyu"
@@ -180,7 +217,7 @@ else
 fi
 
 # 修改内核名称
-d ~/build_oneplus_sm8750/build_kernel/kernel_platform/ || exit
+cd ~/build_oneplus_sm8750/build_kernel/kernel_platform/ || exit
 sed -i 's/res="\$res\$(cat "\$file")"/res="-android15-8-g013ec21bba94-abogki383916444"/g' ./common/scripts/setlocalversion
 sudo sed -i "s/-android15-8-g013ec21bba94-abogki383916444/$KERNEL_NAME/g" ./common/scripts/setlocalversion
 
